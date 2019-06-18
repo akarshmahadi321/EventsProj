@@ -1,28 +1,20 @@
 package com.whizdm.dao;
 
-import com.opencsv.CSVWriter;
 import com.whizdm.model.Events;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @Transactional
-public class EventsDAO  {
+public class EventsDAO {
     @Autowired
     private SessionFactory sessionFactory;
     private String store = "";
@@ -46,7 +38,7 @@ public class EventsDAO  {
         return true;
     }
 
-    public String execManual(Date date, Date date1, String userId) {
+    public String execManual(String date, String date1, String userId) {
         Query query = getSession().createSQLQuery(
                 "select * from aws_events_loans_v2 where event_timestamp between :date and :date1 and user_id in(:userId)  limit 20")
                 .addEntity(Events.class)
@@ -59,49 +51,39 @@ public class EventsDAO  {
         while (itr.hasNext()) {
             store = store + itr.next().toString();
         }
+        Criteria criteria = getSession().createCriteria(Events.class);
+
+        List list = criteria.list();
         return store;
     }
-    public void writeToCsv(List<Events> eventsList)
-    {
-        String header="event_type,event_timestamp,attributes,user_id,session_id,device_model";
 
-        Iterator<Events> itr=eventsList.listIterator();
-        try {
-            CSVWriter writer = new CSVWriter(new FileWriter(new File("/Users/moneyview/Desktop/output.csv")));
-            writer.writeNext(header.split(","));
-            while (itr.hasNext()) {
-                Events e = itr.next();
-                String eventType = e.getEventType();
-                String attributes = e.getAttributes();
-                String userId = e.getUserId();
-                Date eventTimestamp = e.getEventTimestamp();
-                String deviceModel = e.getDeviceModel();
-                String sessionId = e.getSessionId();
-                ArrayList<String> arr = new ArrayList<>();
-                arr.add(eventType);
-                arr.add(eventTimestamp.toString());
-                arr.add(attributes);
-                arr.add(userId);
-                arr.add(sessionId);
-                arr.add(deviceModel);
-                String[] array = arr.toArray(new String[0]);
-                writer.writeNext(array);
 
-            }
-            writer.close();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public List<Events> getFilteredEventsByDateAndUserId(Date startDate, Date endDate, String userIds) {
+    public List<Object[]> getFilteredEventsByDateAndUserId(String startDate, String endDate, String userIds) {
         Session s = getSession();
         Criteria c = s.createCriteria(Events.class);
-        c.add(Restrictions.between("eventTimestamp", startDate, endDate));
-        c.add(Restrictions.in("userId", userIds.split(",")));
+        Projection projection = Projections.property("eventType");
+        Projection projection2 = Projections.property("eventTimestamp");
+        Projection projection3 = Projections.property("userId");
+        Projection projection4 = Projections.property("attributes");
+        Projection projection5 = Projections.property("sessionId");
+
+        ProjectionList pList = Projections.projectionList();
+        pList.add(projection);
+        pList.add(projection2);
+        pList.add(projection3);
+        pList.add(projection4);
+        pList.add(projection5);
+        c.setProjection(pList);
+        Criterion cr1 = Restrictions.between("eventTimestamp", startDate, endDate);
+        Criterion cr2 = Restrictions.in("userId", userIds.split(","));
+
+        LogicalExpression andExp = Restrictions.and(cr1, cr2);
+        c.add(andExp);
+
         return c.list();
     }
+
+
 
     @SuppressWarnings("unchecked")
     public List<Events> getAllEvents() {

@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
 @Entity
 @Table(name = "aws_events_loans_v2")
@@ -20,11 +19,11 @@ public class Events {
     @Column(name = "event_type")
     String eventType;
     @Column(name = "event_timestamp")
-    //String eventTimestamp;
-    Date eventTimestamp = new Date();
+    String eventTimestamp;
+    //Date eventTimestamp = new Date();
     @Column(name = "arrival_timestamp")
-    //String arrivalTimestamp;
-    Date arrivalTimestamp = new Date();
+    String arrivalTimestamp;
+    //Date arrivalTimestamp = new Date();
     @Column(name = "event_version")
     String eventVer;
     @Column(name = "application_package_name")
@@ -46,11 +45,11 @@ public class Events {
     @Column(name = "session_id")
     String sessionId;
     @Column(name = "session_start_timestamp")
-    //String sessionStartTimestamp;
-    Date sessionStartTimestamp = new Date();
+    String sessionStartTimestamp;
+    //Date sessionStartTimestamp = new Date();
     @Column(name = "session_stop_timestamp")
-    //String sessionStopTimestamp;
-    Date sessionStopTimestamp = new Date();
+    String sessionStopTimestamp;
+    //Date sessionStopTimestamp = new Date();
     @Column(name = "attributes")
     String attributes;
     @Column(name = "android_id")
@@ -64,10 +63,11 @@ public class Events {
     @Column(name = "loan_application_no")
     String loanAppNo;
     @Column(name = "created_at")
-    //String createdAt;
-    Date createdAt = new Date();
+    String createdAt;
+    //Date createdAt = new Date();
     @Column(name = "application_version_code")
     String appVerCode;
+
 
 
 }
